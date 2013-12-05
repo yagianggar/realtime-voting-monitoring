@@ -1,0 +1,175 @@
+<script src="javascripts/jquery/jquery-1.7.2.min.js"></script>
+<script src="javascripts/highcharts-3.0.5/highcharts.js"></script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect('/voting_result');
+  
+  socket.on('connect', function (data) {
+  	console.log("Connected to this page");
+    socket.emit('requestLatestResult', { my: 'data' });
+  });
+
+  socket.on('getResult', function (data) {
+  	console.log("Message from server : ");
+  	console.log(data);
+  	var kandidat = "";
+	var totalVotePerKandidat = "";
+	var persentasePerKandidat = "";
+
+  	for (i=0; i<data.result.length; i++) {
+  		kandidat += data.result[i].nama_kandidat+",";
+  		totalVotePerKandidat += data.result[i].vote+",";
+  		persentasePerKandidat += Math.round((data.result[i].vote / data.total_voters)*100)+",";
+  	}
+
+  	kandidat = kandidat.substr(0,kandidat.length-1);
+  	var kandidatSplit = kandidat.split(",");
+
+  	totalVotePerKandidat = totalVotePerKandidat.substr(0,totalVotePerKandidat.length-1);
+
+  	var totalVotePerKandidatSplit = totalVotePerKandidat.split(",");
+
+  	persentasePerKandidat = persentasePerKandidat.substr(0,persentasePerKandidat.length-1);
+
+  	var persentasePerKandidatSplit = persentasePerKandidat.split(",");
+
+  	for(var j=0; j<persentasePerKandidatSplit.length; j++) { 
+		persentasePerKandidatSplit[j] = parseInt(persentasePerKandidatSplit[j], 10); 
+	}
+
+	for(var k=0; k<totalVotePerKandidatSplit.length; k++) { 
+		totalVotePerKandidatSplit[k] = parseInt(totalVotePerKandidatSplit[k], 10); 
+	} 
+
+  	//socket.emit('fromClient', { my: 'data' });
+	
+    $(document).ready(function(){
+		var selectBox = $("select");
+		$('#totalVoters')[0].innerHTML = "Total : "+data.total_voters+" voters";
+
+		showByPercentage();
+		//showByValue();
+		selectBox.change(function()
+		{ 
+			if ($(this).val() == "percentage") {
+				showByPercentage();
+			} else if ($(this).val() == "total_value") {
+				showByValue();
+			}
+			//alert("You Choose : "+$(this).val());
+		});
+
+		
+		function showByPercentage () {
+			$(function () {
+				
+					//$('#container')[0].innerHTML = "";
+					$('#container').highcharts({
+						chart: {
+							type: 'column'
+						},
+						title: {
+							text: 'Voting Result'
+						},
+						subtitle: {
+							text: 'Ketua IAP 2013 - 2018'
+						},
+						xAxis: {
+							categories: kandidatSplit
+						},
+						yAxis: {
+							min: 0,
+							max: 100,
+							title: {
+								text: 'Total Vote (%)'
+							}
+						},
+						tooltip: {
+							headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+							pointFormat: '<tr><td style="color:{series.color};padding:0">Total : </td> ' +
+								'<td style="padding:0"> <b>{point.y:.1f} % </b></td></tr>',
+							footerFormat: '</table>',
+							shared: true,
+							useHTML: true
+						},
+						plotOptions: {
+							column: {
+								pointPadding: 0.2,
+								borderWidth: 0,
+								colorByPoint: true
+							}
+						},
+						legend : {
+							enabled : false
+						},
+						series: [{
+							name: 'Total Vote',
+							data: persentasePerKandidatSplit
+						}]
+					});
+				
+			});
+		}
+		
+		function showByValue () {
+			$(function () {
+					//$('#container')[0].innerHTML = "";
+					$('#container').highcharts({
+						chart: {
+							type: 'column'
+						},
+						title: {
+							text: 'Voting Result'
+						},
+						subtitle: {
+							text: 'Ketua IAP 2013 - 2018'
+						},
+						xAxis: {
+							categories: kandidatSplit
+						},
+						yAxis: {
+							allowDecimals:false,
+							title: {
+								text: 'Total Voters'
+							}
+						},
+						tooltip: {
+							headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+							pointFormat: '<tr><td style="color:{series.color};padding:0">Total : </td> ' +
+								'<td style="padding:0"> <b>{point.y:.1f} voters </b></td></tr>',
+							footerFormat: '</table>',
+							shared: true,
+							useHTML: true
+						},
+						plotOptions: {
+							column: {
+								pointPadding: 0.2,
+								borderWidth: 0,
+								colorByPoint: true
+							}
+						},
+						legend : {
+							enabled : false
+						},
+						series: [{
+							name: 'Total Vote',
+							data: totalVotePerKandidatSplit
+						}]
+					});
+				
+			});
+		}
+		
+	});
+  });
+</script>
+<h1>Voting Result</h1>
+Show result by : 
+<select name="show">
+  <option value="percentage">Percentage</option>
+  <option value="total_value">Total Voters</option>
+</select>
+<br/><br/>
+<div id="totalVoters">Total Voters :  </div>
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
