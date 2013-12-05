@@ -11,7 +11,6 @@ var path = require('path');
 var hbs = require('hbs');
 var io = require('socket.io');
 var request = require('request'); //https://github.com/mikeal/request
-var cheerio = require('cheerio');
 
 var app = require('express')()
   , server = require('http').createServer(app)
@@ -48,15 +47,14 @@ app.get('/users', user.list);
 app.post('/send_voting_result', function(req, res){
   var result = JSON.parse(req.body.kandidat);
   var total_voters = JSON.parse(req.body.total_voters);
-  console.log("This is POST Result");
+  console.log("Received POST");
   console.log(result.data);
   io.of('/voting_result').emit('getResult', {result : result.data, total_voters : total_voters});
   res.send("Data recieved");
 });
 
 app.get('/voting_result', function(req, res){
-    console.log("Generate Result inside");
-  	res.render('voting_result', { title: 'Express', msg: 'This is Result page'});
+    res.render('voting_result', { title: 'Express', msg: 'This is Result page'});
 });
 
 io.set('log level',1);
@@ -79,16 +77,3 @@ voting_result.on('connection', function (vote_socket) {
     });
   });
 });
-
-io.sockets.on('connection', function(socket) {
-	console.log("Client Connected!");
-	//socket.emit('getResult', {hello : 'world'});
-	socket.on('requestLatestResult', function (data) {
-		console.log("From Client"+data);
-	});
-});
-/*
-app.listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
-});
-*/
