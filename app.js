@@ -67,6 +67,10 @@ voting_result.on('connection', function (vote_socket) {
       uri : "http://localhost/portal_alumni_online/voting_api/generateVotingResult",
       method: "GET"
     }, function(e, r, body) {
+      if (typeof body === 'undefined') {
+        console.log("No response from related URL");
+        return;
+      }
       var jsonResult = JSON.parse(body);
       var kandidat = JSON.parse(jsonResult.kandidat);
       var total_voters = JSON.parse(jsonResult.total_voters);
