@@ -64,7 +64,8 @@ var voting_result = io.of('/voting_result');
 voting_result.on('connection', function (vote_socket) {
   vote_socket.on('requestLatestResult', function(vote_socket2) {
     request({
-      uri : "http://localhost/portal_alumni_online/voting_api/generateVotingResult",
+      //uri : "http://localhost/portal_alumni_online/voting_api/generateVotingResult",
+      uri : "http://ia-politel.org/voting_api/generateVotingResult",
       method: "GET"
     }, function(e, r, body) {
       if (typeof body === 'undefined') {
